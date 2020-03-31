@@ -25,9 +25,15 @@ export class PopoverMenuComponent implements OnInit {
   }
   openApiEntryModal() {
     this.popover.dismiss().then(async () => {
+      if (this.history.apiEndpoint == null) {
+        var message = 'Enter the API endpoint';
+      }
+      else {
+        var message = 'Enter the API endpoint\nCurrently it is set to ' + this.history.apiEndpoint;
+      }
       let promptRet = await Modals.prompt({
         title: 'API Configuration',
-        message: 'Enter the API endpoint'
+        message: message
       });
       if (!promptRet.cancelled) {
         this.history.apiEndpoint = promptRet.value;

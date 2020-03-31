@@ -15,10 +15,15 @@ ion-list-header ion-label {
 
 ion-list ion-item ion-icon {
   margin: auto;
-  margin-top: 10px;
+  margin-top: 25px;
 }
 
 ion-list ion-item ion-label {
   font-size: 0.9rem;
   padding-left: 5px;
+}
+
+ion-list ion-item ion-label pre {
+  font-family: inherit;
+  white-space: pre-wrap;
 }

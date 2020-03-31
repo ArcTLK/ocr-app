@@ -20,7 +20,8 @@ export class HomePage implements OnInit {
     private http: HttpClient,
     private history: HistoryService,
     private popover: PopoverController,
-    private ocr: OCR
+    private ocr: OCR,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit() {
@@ -48,25 +49,70 @@ export class HomePage implements OnInit {
         allowEditing: false,
         resultType: CameraResultType.Base64
       });
+      this.spinner.show();
       const result = await Filesystem.writeFile({
         path: 'scans/temp.jpeg',
         data: image.base64String,
         directory: FilesystemDirectory.Cache
       });
-      this.ocr.recText(OCRSourceType.NORMFILEURL, `file://${Filesystem.getUri({ directory: FilesystemDirectory.Cache, path: 'scans/temp.jpeg' })}`)
-      .then(async (res: OCRResult) => {
-        let alertRet = await Modals.alert({
-          title: 'Result',
-          message: JSON.stringify(res)
-        });
-        this.history.addScan(JSON.stringify(res));
-        this.oldScans.unshift(JSON.stringify(res));
-      })
-      .catch((error: any) => console.error(error));
+      Filesystem.getUri({ directory: FilesystemDirectory.Cache, path: 'scans/temp.jpeg' }).then(file => {
+        this.ocr.recText(OCRSourceType.NORMFILEURL, `${file.uri}`)
+        .then(async (res: OCRResult) => {
+          if (res.foundText) {
+            var message = res.blocks.blocktext.join(' ');
+          }
+          else {
+            var message = 'Sorry, we were unable to recognize any textual characters';
+          }
+          let alertRet = await Modals.alert({
+            title: 'Result',
+            message: message
+          });
+          this.history.addScan(message);
+          this.oldScans.unshift(message);
+        })
+        .catch((error: any) => {
+          Modals.alert({
+            title: 'Error',
+            message: JSON.stringify(error)
+          });
+        })
+        .finally(() => this.spinner.hide());
+      });
     }
     else {
       if (this.history.apiEndpoint != null) {
-
+        const image = await Camera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.Base64
+        });
+        this.spinner.show();
+        let bytes = atob(image.base64String);
+        let n = bytes.length;
+        let u8arr = new Uint8Array(n);
+        while(n--){
+          u8arr[n] = bytes.charCodeAt(n);
+        }
+        let file = new File([u8arr], 'image', { type: 'image/png' });
+        const formData: FormData = new FormData();
+        formData.append(file.name, file, file.name);
+        this.http.post('http://' + this.history.apiEndpoint, formData).toPromise()
+        .then(async (response: string) => {
+          let alertRet = await Modals.alert({
+            title: 'Result',
+            message: response
+          });
+          this.history.addScan(response);
+          this.oldScans.unshift(response);
+        })
+        .catch(error => {
+          Modals.alert({
+            title: 'Error',
+            message: JSON.stringify(error)
+          });
+        })
+        .finally(() => this.spinner.hide());
       }
       else {
         Toast.show({
