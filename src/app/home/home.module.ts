@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { PopoverMenuComponent } from './popover-menu/popover-menu.component';
 
 import { HomePage } from './home.page';
 
@@ -18,6 +19,7 @@ import { HomePage } from './home.page';
       }
     ])
   ],
-  declarations: [HomePage]
+  declarations: [HomePage, PopoverMenuComponent],
+  entryComponents: [PopoverMenuComponent]
 })
 export class HomePageModule {}

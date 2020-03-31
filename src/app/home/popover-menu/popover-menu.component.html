@@ -1,0 +1,9 @@
+<ion-list>
+  <ion-item button="true" lines="none" detail="true" (click)="openApiEntryModal()">
+    <ion-label>Enter API endpoint</ion-label>
+  </ion-item>
+  <ion-item button="true" lines="none" (click)="toggleOffline()">
+    <ion-label *ngIf="history.isOffline">Switch to online mode</ion-label>
+    <ion-label *ngIf="!history.isOffline">Switch to offline mode</ion-label>
+  </ion-item>
+</ion-list>
